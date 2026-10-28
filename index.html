@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live2D Character Studio & Customizer</title>
+  <!-- Cubism Core SDK -->
+  <script src="/live2dcubismcore.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 50% 30%, #1e1e30 0%, #0b0c14 100%);
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      user-select: none;
+    }
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 1;
+    }
+    .panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 400px;
+      max-height: calc(100vh - 40px);
+      background: rgba(15, 17, 28, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 10;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .panel::-webkit-scrollbar { width: 5px; }
+    .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 10px;
+    }
+    .header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Navigation Tabs (2 rows of 4) */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 5px;
+      border-radius: 12px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 7px 2px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: #f1f5f9;
+      background: rgba(255,255,255,0.06);
+    }
+    .tab-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #7dd3fc;
+      margin-bottom: 2px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    button, select {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover, select:hover {
+      background: #334155;
+      border-color: #38bdf8;
+    }
+    button.primary {
+      background: #0284c7;
+      border-color: #0284c7;
+      font-weight: 600;
+    }
+    button.primary:hover {
+      background: #0369a1;
+    }
+    .btn-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .btn-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #38bdf8;
+      height: 4px;
+      cursor: pointer;
+    }
+    .slider-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .parts-list {
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .parts-list::-webkit-scrollbar { width: 4px; }
+    .parts-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .part-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      background: rgba(0,0,0,0.25);
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .part-item input[type="checkbox"] {
+      accent-color: #38bdf8;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+    .color-swatches {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .swatch {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .swatch:hover, .swatch.active {
+      transform: scale(1.18);
+      border-color: #ffffff;
+    }
+    .drop-zone {
+      border: 2px dashed #475569;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      transition: 0.2s;
+    }
+    .drop-zone:hover {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.06);
+      color: #38bdf8;
+    }
+    .prompt-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      font-family: monospace;
+      line-height: 1.45;
+      user-select: text;
+      word-break: break-word;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+    .status-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(15, 17, 28, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+
+    /* Modal for Raw Texture Atlas */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-window {
+      background: #121420;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      width: 90vw;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .modal-header h3 {
+      font-size: 1.05rem;
+      color: #38bdf8;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      color: #ffffff;
+    }
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-body img {
+      max-width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 20px 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Custom Saved Presets Shelf */
+    .preset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-top: 6px;
+    }
+    .preset-list::-webkit-scrollbar { width: 4px; }
+    .preset-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .preset-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .preset-item:hover {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
+    }
+    .preset-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: contain;
+      background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 10px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+    .preset-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .preset-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preset-date {
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+    .preset-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .preset-actions button {
+      padding: 4px 8px;
+      font-size: 0.74rem;
+    }
+
+    /* Toast Notification Floating Banner */
+    #toast-container {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 12px 22px;
+      border-radius: 12px;
+      color: #f8fafc;
+      font-size: 0.88rem;
+      font-weight: 500;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+      animation: toast-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      max-width: 520px;
+      transition: all 0.25s ease;
+    }
+    .toast.success {
+      border-color: #10b981;
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
+    }
+    .toast.info {
+      border-color: #38bdf8;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.3);
+    }
+    .toast.error {
+      border-color: #ef4444;
+      box-shadow: 0 12px 30px rgba(239, 68, 68, 0.3);
+    }
+    .toast-icon {
+      font-size: 1.35rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .toast-text {
+      flex: 1;
+      line-height: 1.45;
+    }
+    .toast.fade-out {
+      animation: toast-out 0.3s forwards;
+    }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(-25px) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toast-out {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-18px) scale(0.92); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Floating Notification Container -->
+  <div id="toast-container"></div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="status-bar">
+    <span class="dot"></span>
+    <span id="status-text">Đang tải model...</span>
+  </div>
+
+  <div class="panel">
+    <div class="header">
+      <h2>✨ Live2D Studio</h2>
+      <select id="select-character" style="padding: 4px 8px; font-size: 0.8rem;">
+        <option value="hiyori">Hiyori (Nữ sinh)</option>
+        <option value="haru">Haru (Đồng phục xanh)</option>
+        <option value="mao">Mao (Anime Cute)</option>
+        <option value="natori">Natori (Kính cận)</option>
+        <option value="wanko">Wanko (Cô bé tai thú)</option>
+      </select>
+    </div>
+
+    <!-- Navigation Tabs (2 Rows of 4) -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-outfit">👗 Quần Áo</button>
+      <button class="tab-btn" data-tab="tab-hair">💇 Kiểu Tóc</button>
+      <button class="tab-btn" data-tab="tab-emote">🎭 Biểu Cảm</button>
+      <button class="tab-btn" data-tab="tab-motion">⚡ Động Tác</button>
+      <button class="tab-btn" data-tab="tab-inspect">📐 Góc & Gốc</button>
+      <button class="tab-btn" data-tab="tab-ai-prompt" style="color: #38bdf8; font-weight: 700;">📝 Form AI</button>
+      <button class="tab-btn" data-tab="tab-ai-part" style="color: #4ade80; font-weight: 700;">🧩 Up Part</button>
+      <button class="tab-btn" data-tab="tab-ai-model" style="color: #f472b6; font-weight: 700;">📦 Up Model</button>
+    </div>
+
+    <!-- TAB 1: QUẦN ÁO & TRANG PHỤC -->
+    <div class="tab-content active" id="tab-outfit">
+      <div>
+        <div class="section-title">1. Kiểu Trang Phục (Presets)</div>
+        <div class="card">
+          <div class="btn-grid-2">
+            <button class="primary" id="btn-outfit-full">🥋 Đầy đủ / Mặc định</button>
+            <button id="btn-outfit-summer">👚 Áo cộc tay / Mùa hè</button>
+            <button id="btn-outfit-casual">🎽 Áo ba lỗ / Thoải mái</button>
+            <button id="btn-outfit-switch-arms">🔄 Đổi kiểu tay (Pose)</button>
+          </div>
+          <button id="btn-quick-save-outfit" style="width: 100%; margin-top: 6px; background: rgba(56, 189, 248, 0.12); border: 1px solid #38bdf8; color: #38bdf8; font-weight: 600;">💾 Lưu Bộ Đồ Này Vào Bộ Sưu Tập</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">2. Tông Màu Trang Phục (Theme Palette)</div>
+        <div class="card">
+          <div class="row">
+            <span>Chọn bảng màu nhanh:</span>
+          </div>
+          <div class="color-swatches">
+            <div class="swatch active" data-hue="0" style="background: #e2e8f0;" title="Mặc định"></div>
+            <div class="swatch" data-hue="210" style="background: #3b82f6;" title="Navy Blue"></div>
+            <div class="swatch" data-hue="330" style="background: #ec4899;" title="Hồng Sakura"></div>
+            <div class="swatch" data-hue="140" style="background: #10b981;" title="Xanh Bạc Hà"></div>
+            <div class="swatch" data-hue="270" style="background: #a855f7;" title="Tím Cyberpunk"></div>
+            <div class="swatch" data-hue="30" style="background: #f97316;" title="Cam Nắng"></div>
+          </div>
+          <div class="slider-item" style="margin-top: 4px;">
+            <div class="slider-label">
+              <span>Đổi màu tùy chỉnh (Hue Shift):</span>
+              <span id="hue-val">0°</span>
+            </div>
+            <input type="range" id="slider-hue" min="0" max="360" step="1" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Tùy Chỉnh Từng Lớp Áo & Thân</div>
+        <div class="card">
+          <div class="parts-list" id="outfit-parts-list">
+            <div style="color: #64748b; font-size: 0.8rem; text-align: center;">Đang tải parts...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: KIỂU TÓC & DÁNG TÓC -->
+    <div class="tab-content" id="tab-hair">
+      <div>
+        <div class="section-title">1. Kiểu Tóc (Hairstyle Presets)</div>
+        <div class="card">
+          <div class="btn-grid-2">
+            <button class="primary" id="btn-hair-full">💇 Tóc Dài Tự Nhiên</button>
+            <button id="btn-hair-bob">✂️ Tóc Ngắn / Bob</button>
+            <button id="btn-hair-pixie">💇‍♀️ Tóc Tém / Tomboy</button>
+            <button id="btn-hair-tied">🎀 Buộc Gọn (Tied)</button>
+          </div>
+          <button id="btn-quick-save-hair" style="width: 100%; margin-top: 6px; background: rgba(244, 114, 182, 0.12); border: 1px solid #f472b6; color: #f472b6; font-weight: 600;">💾 Lưu Kiểu Tóc Này Vào Bộ Sưu Tập</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">2. Dáng Tóc & Độ Đung Đưa</div>
+        <div class="card">
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Mái trước (Hair Front):</span>
+              <span id="val-hair-front">0.0</span>
+            </div>
+            <input type="range" id="slider-hair-front" min="-1" max="1" step="0.05" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Tóc hai bên (Hair Side):</span>
+              <span id="val-hair-side">0.0</span>
+            </div>
+            <input type="range" id="slider-hair-side" min="-1" max="1" step="0.05" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Tóc sau (Hair Back):</span>
+              <span id="val-hair-back">0.0</span>
+            </div>
+            <input type="range" id="slider-hair-back" min="-1" max="1" step="0.05" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Bật/Tắt Từng Lớp Tóc</div>
+        <div class="card">
+          <div class="parts-list" id="hair-parts-list">
+            <div style="color: #64748b; font-size: 0.8rem; text-align: center;">Đang tải parts...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: BIỂU CẢM -->
+    <div class="tab-content" id="tab-emote">
+      <div>
+        <div class="section-title">1. Cảm Xúc Khuôn Mặt</div>
+        <div class="card">
+          <div class="btn-grid-3">
+            <button class="primary" data-emote="neutral">Bình thường</button>
+            <button data-emote="happy">😊 Vui vẻ</button>
+            <button data-emote="blush">😳 Má hồng</button>
+            <button data-emote="wink">😉 Nháy mắt</button>
+            <button data-emote="sad">😢 U sầu</button>
+            <button data-emote="angry">😠 Tức giận</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">2. Tinh Chỉnh Biểu Cảm Chi Tiết</div>
+        <div class="card">
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Má hồng (Cheek):</span>
+              <span id="val-cheek">0.0</span>
+            </div>
+            <input type="range" id="slider-cheek" min="0" max="1" step="0.05" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Khuôn miệng cười (Smile):</span>
+              <span id="val-smile">0.0</span>
+            </div>
+            <input type="range" id="slider-smile" min="-1" max="1" step="0.05" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Độ cao lông mày:</span>
+              <span id="val-brow">0.0</span>
+            </div>
+            <input type="range" id="slider-brow" min="-1" max="1" step="0.05" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Khắc Phục Lỗi Má Hồng & Khuôn Môi</div>
+        <div class="card">
+          <div style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4; margin-bottom: 8px;">
+            Khi up ảnh AI/Model mới thường bị 2 vết đen xì ở má hoặc môi bị méo vòng tròn. Bấm nút dưới để tự động làm đẹp lại:
+          </div>
+          <button class="primary" id="btn-fix-face-features" style="width: 100%; background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; font-weight: 700; margin-bottom: 6px;">
+            💖 Sửa Lỗi Má Hồng & Khôi Phục Môi Xinh (Xóa 2 Cục Đen Ở Má)
+          </button>
+          <div class="btn-grid-2">
+            <button id="btn-toggle-cheek-part">🚫 Ẩn / Bật Má Hồng</button>
+            <button id="btn-restore-natural-mouth">💋 Đóng Miệng Cười Tự Nhiên</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ANIMATION & ENGINE -->
+    <div class="tab-content" id="tab-motion">
+      <div>
+        <div class="section-title">1. Phản Xạ Tự Nhiên (AIRI Engine)</div>
+        <div class="card">
+          <label class="row">
+            <span>👀 Nhìn theo chuột (Look-at)</span>
+            <input type="checkbox" id="chk-lookat" checked style="accent-color: #38bdf8;">
+          </label>
+          <label class="row">
+            <span>👁️ Tự động chớp mắt (Blink)</span>
+            <input type="checkbox" id="chk-blink" checked style="accent-color: #38bdf8;">
+          </label>
+          <label class="row">
+            <span>🫁 Nhịp thở (Breath)</span>
+            <input type="checkbox" id="chk-breath" checked style="accent-color: #38bdf8;">
+          </label>
+          <label class="row">
+            <span>🎲 Đảo mắt ngẫu nhiên (Saccade)</span>
+            <input type="checkbox" id="chk-saccade" checked style="accent-color: #38bdf8;">
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">2. Khẩu Hình Nói (Lip-Sync)</div>
+        <div class="card">
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Độ mở miệng (Mouth Open):</span>
+              <span id="mouth-val">0.0</span>
+            </div>
+            <input type="range" id="slider-mouth" min="0" max="1" step="0.05" value="0">
+          </div>
+          <button id="btn-talk-demo">▶️ Test nói tự động (Auto Lip-Sync)</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Động Tác (Motions)</div>
+        <div class="card">
+          <select id="select-motion">
+            <option value="">-- Chọn động tác --</option>
+          </select>
+          <button id="btn-play-motion">Chạy động tác</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">4. Kéo Thả Nạp Model Riêng (.zip)</div>
+        <div class="card">
+          <div class="drop-zone" id="drop-zone">
+            📁 Kéo thả file <b>.zip</b> model vào đây<br>hoặc bấm để chọn file
+            <input type="file" id="file-input" accept=".zip" style="display: none;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: GÓC NHÌN & BỘ PHẬN GỐC (INSPECTOR) -->
+    <div class="tab-content" id="tab-inspect">
+      <div>
+        <div class="section-title">1. Góc Nhìn Camera Cận Cảnh</div>
+        <div class="card">
+          <div class="btn-grid-3">
+            <button id="btn-cam-face">👤 Cận Mặt</button>
+            <button id="btn-cam-bust">👚 Thân Trên</button>
+            <button id="btn-cam-body">🧍 Toàn Thân</button>
+          </div>
+          <button id="btn-cam-reset">🔄 Đặt lại góc xem mặc định</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">2. Xoay Góc Các Bộ Phận (Angle Inspector)</div>
+        <div class="card">
+          <div class="btn-grid-3">
+            <button id="btn-angle-left">⬅️ Xoay Trái</button>
+            <button id="btn-angle-front" class="primary">🎯 Trực Diện</button>
+            <button id="btn-angle-right">➡️ Xoay Phải</button>
+          </div>
+          <div class="btn-grid-2" style="margin-top: 4px;">
+            <button id="btn-angle-up">⬆️ Ngước Lên</button>
+            <button id="btn-angle-down">⬇️ Cúi Xuống</button>
+          </div>
+          <label class="row" style="margin-top: 6px;">
+            <span>🔒 Khóa góc quay (Tắt theo chuột)</span>
+            <input type="checkbox" id="chk-lock-angle" style="accent-color: #38bdf8;">
+          </label>
+          <div class="slider-item" style="margin-top: 4px;">
+            <div class="slider-label">
+              <span>Góc đầu X (Head Angle X):</span>
+              <span id="val-angle-x">0°</span>
+            </div>
+            <input type="range" id="slider-angle-x" min="-30" max="30" step="1" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Góc đầu Y (Head Angle Y):</span>
+              <span id="val-angle-y">0°</span>
+            </div>
+            <input type="range" id="slider-angle-y" min="-30" max="30" step="1" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-label">
+              <span>Góc nghiêng Z (Tilt Z):</span>
+              <span id="val-angle-z">0°</span>
+            </div>
+            <input type="range" id="slider-angle-z" min="-30" max="30" step="1" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Soi Riêng Bộ Phận Gốc (Solo Mode)</div>
+        <div class="card">
+          <label class="row">Chọn bộ phận muốn soi:</label>
+          <select id="select-solo-part">
+            <option value="">-- Chọn Part để soi riêng --</option>
+          </select>
+          <div class="btn-grid-2">
+            <button class="primary" id="btn-part-solo">🔍 Soi Riêng</button>
+            <button id="btn-part-restore">🔄 Bật Lại Toàn Bộ</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">4. Tấm Vẽ Texture Gốc (Texture Atlas)</div>
+        <div class="card">
+          <div class="row">
+            <span>Kích thước bản vẽ:</span>
+            <span id="atlas-dim" style="color: #38bdf8;">2048 x 2048 px</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+            <img id="atlas-thumb" src="" alt="Texture Atlas" style="width: 54px; height: 54px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); object-fit: contain; background: #0f172a;" />
+            <button class="primary" id="btn-open-atlas" style="flex: 1;">👁️ Phóng To Bản Vẽ Gốc</button>
+          </div>
+          <div class="btn-grid-2">
+            <button id="btn-download-raw-texture">💾 Tải Texture Gốc</button>
+            <button id="btn-download-blueprint">🗺️ Tải Bản Đồ UV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: FORM TẠO PROMPT AI CHO GEMINI -->
+    <div class="tab-content" id="tab-ai-prompt">
+      <!-- MỤC 0: XUẤT BẢN VẼ TEXTURE GỐC CHO GEMINI -->
+      <div>
+        <div class="section-title">0. Xuất Bản Vẽ Cho Gemini</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4; margin-bottom: 8px;">
+            Tải Texture gốc hoặc Bản đồ phân vùng UV (kèm tọa độ các khung Part) để gửi kèm cho Gemini phân tích & vẽ đúng vị trí:
+          </div>
+          <div class="btn-grid-2">
+            <button class="primary" id="btn-export-raw-tex-ai">💾 Tải Texture Gốc (2048px)</button>
+            <button id="btn-export-blueprint-ai">🗺️ Tải Bản Đồ UV Blueprint</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MỤC 1: FORM THIẾT KẾ MODEL MỚI TOÀN DIỆN CHO GEMINI -->
+      <div>
+        <div class="section-title">1. Form Thiết Kế Model Live2D Mới (Cho Gemini)</div>
+        <div class="card">
+          <label class="row">Tên & Giới tính:
+            <input type="text" id="ai-model-name" value="Akira" placeholder="VD: Akira (Nữ sinh)" style="width: 170px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+          </label>
+
+          <label class="row">Chủ đề nhân vật:
+            <select id="ai-model-theme" style="width: 175px;">
+              <option value="Anime High School Girl">🏫 Nữ sinh Anime Năng Động</option>
+              <option value="Cyberpunk Sci-Fi Hacker">🚀 Nữ Hacker Cyberpunk</option>
+              <option value="Gothic Dark Magic Sorceress">🖤 Nữ Phù Thủy Gothic</option>
+              <option value="Traditional Fantasy Samurai">⚔️ Nữ Hiệp Sĩ / Samurai</option>
+              <option value="Sweet Idol Singer">🎤 Nữ Ca Sĩ Thần Tượng</option>
+              <option value="Cute Animal Kemonomimi">🐱 Cô Bé Tai Thú Đáng Yêu</option>
+            </select>
+          </label>
+
+          <label class="row">Màu tóc:
+            <select id="ai-model-hair-color" style="width: 175px;">
+              <option value="Sakura Pastel Pink">🌸 Hồng Hoa Anh Đào</option>
+              <option value="Silver Platinum White">🤍 Trắng Ánh Kim / Bạch Kim</option>
+              <option value="Deep Navy Blue">💙 Xanh Đậm Dạ Quang</option>
+              <option value="Jet Black with Purple Streak">🖤 Đen Tuyền Highlight Tím</option>
+              <option value="Golden Honey Blonde">💛 Vàng Mật Ong Rực Rỡ</option>
+              <option value="Emerald Mint Green">💚 Xanh Ngọc Bích / Bạc Hà</option>
+            </select>
+          </label>
+
+          <div class="slider-item">
+            <span style="font-size: 0.78rem; color: #94a3b8;">Kiểu tóc chi tiết:</span>
+            <input type="text" id="ai-model-hair-desc" value="Tóc buộc hai bên twintails dài gợn sóng, mái bằng dễ thương" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+          </div>
+
+          <div class="slider-item">
+            <span style="font-size: 0.78rem; color: #94a3b8;">Trang phục / Quần áo:</span>
+            <input type="text" id="ai-model-outfit-desc" value="Đồng phục thủy thủ cách tân, áo khoác lửng, nơ cổ lớn, chân váy xếp ly" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+          </div>
+
+          <div class="slider-item">
+            <span style="font-size: 0.78rem; color: #94a3b8;">Mắt & Phụ kiện:</span>
+            <input type="text" id="ai-model-acc-desc" value="Mắt to tròn long lanh, kẹp tóc hình ngôi sao, tai nghe mèo" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+          </div>
+
+          <label class="row">Mục tiêu Prompt:
+            <select id="ai-prompt-mode" style="width: 175px;">
+              <option value="layers">🧩 Tách Lớp Live2D (Part Layers)</option>
+              <option value="atlas">🗺️ Vẽ Đè Texture Atlas 2048px</option>
+              <option value="concept">🎨 Bản Vẽ Thiết Kế Toàn Thân (Concept)</option>
+            </select>
+          </label>
+
+          <div class="prompt-box" id="ai-master-prompt-output" style="max-height: 130px;">Đang tạo master prompt...</div>
+          <button class="primary" id="btn-copy-master-prompt">📋 Sao Chép Master Prompt Cho Gemini</button>
+        </div>
+      </div>
+
+      <!-- MỤC 2: FORM TẠO PROMPT VẼ TỪNG BỘ PHẬN -->
+      <div>
+        <div class="section-title">2. Form Tạo Prompt Từng Part Nhanh</div>
+        <div class="card">
+          <label class="row">Bộ phận cần vẽ:
+            <select id="ai-part-select" style="width: 175px;">
+              <option value="PartHairFront">💇 Tóc mái trước (HairFront)</option>
+              <option value="PartHairBack">💇‍♀️ Tóc dài sau (HairBack)</option>
+              <option value="PartBody">👗 Trang phục thân (Body)</option>
+              <option value="PartArmA">🧤 Tay áo & cánh tay (ArmA)</option>
+              <option value="PartCheek">😳 Hiệu ứng má hồng (Cheek)</option>
+            </select>
+          </label>
+
+          <label class="row">Phong cách (Style):
+            <select id="ai-style-select" style="width: 175px;">
+              <option value="anime-school">🏫 Anime Học đường</option>
+              <option value="gothic">🖤 Gothic Lolita</option>
+              <option value="cyberpunk">🚀 Cyberpunk Neon</option>
+              <option value="kimono">🌸 Kimono / Cổ trang</option>
+              <option value="streetwear">🎧 Hoodie Đường phố</option>
+              <option value="princess">👑 Công Chúa Quý Phái</option>
+            </select>
+          </label>
+
+          <label class="row">Màu sắc chủ đạo:
+            <select id="ai-color-select" style="width: 175px;">
+              <option value="pastel-pink">🌸 Hồng Pastel</option>
+              <option value="navy-blue">💙 Xanh Biển Navy</option>
+              <option value="silver-white">🤍 Trắng Bạc</option>
+              <option value="midnight-black">🖤 Đen Huyền Bí</option>
+              <option value="golden-blonde">💛 Vàng Kim Anime</option>
+              <option value="lavender">💜 Tím Mộng Mơ</option>
+            </select>
+          </label>
+
+          <div class="prompt-box" id="ai-prompt-output">Đang tạo prompt...</div>
+          <button class="primary" id="btn-copy-prompt">📋 Sao Chép Prompt Từng Part</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: GHÉP TỪNG BỘ PHẬN DO AI TẠO -->
+    <div class="tab-content" id="tab-ai-part">
+      <div>
+        <div class="section-title">1. Tải Lên Bộ Phận Do AI Tạo (PNG trong suốt)</div>
+        <div class="card">
+          <div class="drop-zone" id="ai-drop-zone">
+            🖼️ Kéo thả ảnh PNG bộ phận vào đây<br>hoặc click để chọn file
+            <input type="file" id="ai-file-input" accept="image/png,image/webp,image/jpeg" style="display: none;" />
+          </div>
+
+          <div id="ai-preview-container" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+            <div class="row">
+              <span>Xem trước ảnh vừa nạp:</span>
+              <img id="ai-img-preview" src="" style="width: 50px; height: 50px; border-radius: 6px; object-fit: contain; background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 10px 10px; border: 1px solid rgba(255,255,255,0.2);" />
+            </div>
+
+            <label class="row">Gắn vào vị trí bộ phận:
+              <select id="ai-target-part" style="width: 160px;">
+                <option value="PartHairFront">💇 Tóc mái trước</option>
+                <option value="PartHairBack">💇‍♀️ Tóc sau</option>
+                <option value="PartBody">👗 Thân / Trang phục</option>
+                <option value="PartArmA">🧤 Tay áo</option>
+                <option value="PartCheek">😳 Má hồng</option>
+              </select>
+            </label>
+
+            <div class="slider-item">
+              <div class="slider-label">
+                <span>Dịch ngang (Offset X):</span>
+                <span id="val-ai-x">0px</span>
+              </div>
+              <input type="range" id="slider-ai-x" min="-400" max="400" step="5" value="0">
+            </div>
+
+            <div class="slider-item">
+              <div class="slider-label">
+                <span>Dịch dọc (Offset Y):</span>
+                <span id="val-ai-y">0px</span>
+              </div>
+              <input type="range" id="slider-ai-y" min="-400" max="400" step="5" value="0">
+            </div>
+
+            <div class="slider-item">
+              <div class="slider-label">
+                <span>Độ lớn (Scale):</span>
+                <span id="val-ai-scale">1.0x</span>
+              </div>
+              <input type="range" id="slider-ai-scale" min="0.3" max="2.5" step="0.05" value="1.0">
+            </div>
+
+            <div class="btn-grid-2" style="margin-top: 4px;">
+              <button class="primary" id="btn-apply-ai-part">✨ Gắn Lên Model</button>
+              <button id="btn-reset-ai-texture">🔄 Khôi Phục Gốc</button>
+            </div>
+            <div class="btn-grid-2">
+              <button id="btn-view-texture-part">👁️ Xem Tấm Texture Phẳng</button>
+              <button id="btn-export-texture">💾 Tải Về Texture Đã Ghép</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: NẠP TOÀN BỘ MODEL / TEXTURE ATLAS MỚI -->
+    <div class="tab-content" id="tab-ai-model">
+      <div>
+        <div class="section-title">1. Nạp Toàn Bộ Texture Atlas Mới (2048x2048)</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4; margin-bottom: 8px;">
+            Khi Gemini vẽ hoàn chỉnh cả tấm Texture Atlas (dựa trên bản đồ UV Blueprint), nạp file ảnh vào đây để thay đổi toàn bộ ngoại hình nhân vật trong 1 click:
+          </div>
+
+          <div class="drop-zone" id="full-atlas-drop-zone">
+            🖼️ Kéo thả file Texture Atlas mới (PNG / JPG) vào đây<br>hoặc click để chọn file
+            <input type="file" id="full-atlas-file-input" accept="image/png,image/webp,image/jpeg" style="display: none;" />
+          </div>
+
+          <label class="row" style="font-size: 0.76rem; cursor: pointer; color: #38bdf8; margin: 8px 0;">
+            <input type="checkbox" id="chk-auto-remove-black" checked style="accent-color: #38bdf8; width: 15px; height: 15px;">
+            <span>🪄 Tự động xóa nền đen thành trong suốt (khắc phục lỗi khối đen khi up ảnh JPG)</span>
+          </label>
+
+          <button id="btn-load-blonde-preset" style="width: 100%; margin-bottom: 6px; background: linear-gradient(135deg, #f59e0b, #ec4899); border: none; font-weight: 600; color: #fff;">
+            ✨ Nạp Thử Mẫu Cô Bé Tóc Vàng (Đã Sửa Hết Lỗi Đen)
+          </button>
+
+          <div id="full-atlas-preview-container" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+            <div class="row">
+              <span>Xem trước Texture mới:</span>
+              <img id="full-atlas-preview-img" src="" style="width: 54px; height: 54px; border-radius: 6px; object-fit: contain; background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 10px 10px; border: 1px solid rgba(255,255,255,0.2);" />
+            </div>
+            <div class="row">
+              <span>Độ phân giải:</span>
+              <span id="full-atlas-dim" style="color: #38bdf8;">2048 x 2048 px</span>
+            </div>
+            <div class="btn-grid-2">
+              <button class="primary" id="btn-apply-full-atlas">🚀 Áp Dụng Toàn Bộ Atlas</button>
+              <button id="btn-reset-full-atlas">🔄 Khôi Phục Mặc Định</button>
+            </div>
+            <button id="btn-apply-and-save-atlas" style="width: 100%; margin-top: 4px; background: linear-gradient(135deg, #059669, #10b981); border: none; font-weight: 700; color: #fff;">💾 Áp Dụng & Lưu Vào Bộ Sưu Tập</button>
+            <button id="btn-view-texture-model" style="width: 100%; margin-top: 4px;">👁️ Phóng To Xem Tấm Texture 2048px</button>
+            <button id="btn-fix-face-quick" style="width: 100%; margin-top: 4px; background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; font-weight: 700; color: #fff;">💖 Sửa Lỗi 2 Cục Đen Ở Má & Miệng Méo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MỤC 2: BỘ SƯU TẬP MODEL CỦA TÔI -->
+      <div>
+        <div class="section-title">2. 💾 Lưu Vào Bộ Sưu Tập Model Của Tôi</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4; margin-bottom: 8px;">
+            Lưu lại toàn bộ ngoại hình tùy biến hiện tại để bạn có thể chuyển đổi qua lại, đổi tóc và đổi quần áo bất cứ lúc nào:
+          </div>
+          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <input type="text" id="input-save-model-name" placeholder="Đặt tên cho Model này..." style="flex: 1; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem;">
+            <button class="primary" id="btn-save-current-model" style="white-space: nowrap;">💾 Lưu Model</button>
+          </div>
+          <button id="btn-restore-default-model-tab" style="width: 100%; margin-bottom: 8px;">🔄 Quay Lại Model Mặc Định Gốc</button>
+
+          <div style="font-size: 0.76rem; color: #cbd5e1; font-weight: 600; margin-top: 4px;">Danh sách Model tùy biến đã lưu:</div>
+          <div class="preset-list" id="custom-models-list">
+            <div style="color: #64748b; font-size: 0.78rem; text-align: center; padding: 12px;">Chưa có model nào được lưu. Hãy nạp texture và bấm 'Lưu Model'!</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">3. Chuyển Đổi Nhân Vật Có Sẵn</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4; margin-bottom: 8px;">
+            Chọn nhanh giữa các mẫu model Live2D chính thức có sẵn trong thư viện:
+          </div>
+          <div class="btn-grid-2">
+            <button id="btn-quick-char-hiyori">🌸 Hiyori (Học sinh)</button>
+            <button id="btn-quick-char-haru">👗 Haru (Đồng phục)</button>
+            <button id="btn-quick-char-mao">🐱 Mao (Cute Anime)</button>
+            <button id="btn-quick-char-natori">👓 Natori (Kính cận)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal xem Texture Gốc -->
+  <div class="modal-backdrop" id="modal-atlas">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>🎨 Bản Vẽ Texture Gốc (Raw Texture Atlas)</h3>
+        <button class="modal-close" id="btn-close-atlas">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="atlas-full-img" src="" alt="Texture Atlas Full" />
+        <div style="font-size: 0.82rem; color: #94a3b8; text-align: center;">
+          Đây là toàn bộ các bộ phận phẳng (tóc, mắt, quần áo, phụ kiện) được họa sĩ vẽ trên tấm texture gốc trước khi ghép thành model Live2D.
+        </div>
+        <div class="btn-grid-2" style="width: 100%; max-width: 480px;">
+          <button class="primary" id="btn-modal-dl-raw">💾 Tải Texture Gốc (PNG)</button>
+          <button id="btn-modal-dl-blueprint">🗺️ Tải Bản Đồ UV Blueprint</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
