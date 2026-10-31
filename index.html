@@ -62,10 +62,10 @@
       gap: 8px;
     }
     
-    /* Navigation Tabs (2 rows of 4) */
+    /* Navigation Tabs */
     .tabs {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
       gap: 5px;
       background: rgba(0, 0, 0, 0.35);
       padding: 5px;
@@ -463,9 +463,342 @@
       from { opacity: 1; transform: translateY(0) scale(1); }
       to { opacity: 0; transform: translateY(-18px) scale(0.92); }
     }
+
+    /* TIKTOK STREAM OVERLAY & INTERACTION STYLES */
+    #stream-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #stream-bubbles {
+      position: absolute;
+      top: 70px;
+      left: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 380px;
+    }
+    .stream-bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 10px 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: bubble-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: all 0.3s;
+    }
+    .stream-bubble.bubble-gift {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.2);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.35);
+    }
+    .stream-bubble.bubble-follow {
+      border-color: #ec4899;
+      background: rgba(236, 72, 153, 0.2);
+    }
+    .stream-bubble.fade-out {
+      opacity: 0;
+      transform: translateY(-15px) scale(0.95);
+    }
+    @keyframes bubble-in {
+      from { opacity: 0; transform: translateY(20px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .bubble-avatar, .bubble-avatar-placeholder {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      font-size: 1.2rem;
+    }
+    .bubble-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .bubble-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .bubble-user {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .bubble-badge {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      background: #ec4899;
+      color: #fff;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .bubble-text {
+      font-size: 0.88rem;
+      color: #f8fafc;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    /* Gift Banner Card */
+    #stream-gift-banner {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .gift-banner-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(234, 88, 12, 0.95));
+      border: 2px solid #fbbf24;
+      padding: 12px 24px;
+      border-radius: 40px;
+      box-shadow: 0 12px 40px rgba(245, 158, 11, 0.6);
+      animation: gift-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      color: #fff;
+    }
+    .gift-banner-card.fade-out {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+      transition: all 0.35s ease;
+    }
+    @keyframes gift-pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.08); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .gift-banner-left {
+      font-size: 2rem;
+    }
+    .gift-banner-img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .gift-banner-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #fef08a;
+    }
+    .gift-banner-desc {
+      font-size: 0.92rem;
+    }
+    .gift-banner-right {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #fef08a;
+    }
+
+    /* Floating Heart Particles */
+    #stream-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .floating-heart {
+      position: absolute;
+      animation: float-heart linear forwards;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    }
+    @keyframes float-heart {
+      0% {
+        opacity: 0;
+        transform: scale(0.4) translateY(0) rotate(0deg);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1.1) translateY(-60px) rotate(-15deg);
+      }
+      80% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.9) translateY(-400px) rotate(25deg);
+      }
+    }
+
+    /* Confetti piece */
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confetti-fall linear forwards;
+    }
+    @keyframes confetti-fall {
+      0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(350px) rotate(720deg); }
+    }
+
+    /* TikTok Panel UI */
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #64748b;
+    }
+    .status-dot.ready { background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
+    .status-dot.connecting { background: #f59e0b; animation: pulse 1s infinite; }
+    .status-dot.live { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    .status-dot.error { background: #ef4444; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .events-feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .feed-item.feed-gift {
+      background: rgba(245, 158, 11, 0.15);
+      border-left: 3px solid #f59e0b;
+    }
+    .feed-item.feed-chat {
+      border-left: 3px solid #38bdf8;
+    }
+    .feed-item.feed-like {
+      border-left: 3px solid #ec4899;
+    }
+    .feed-item.feed-follow {
+      border-left: 3px solid #10b981;
+    }
+    .feed-badge {
+      font-weight: 700;
+      font-size: 0.68rem;
+      flex-shrink: 0;
+    }
+    .feed-text {
+      flex: 1;
+      color: #e2e8f0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .feed-time {
+      font-size: 0.65rem;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    /* OBS Studio Mode Overrides */
+    body.obs-mode {
+      background: transparent !important;
+    }
+    body.obs-mode #canvas {
+      background: transparent !important;
+    }
+    body.obs-mode .panel,
+    body.obs-mode .status-bar {
+      display: none !important;
+    }
+    #obs-exit-banner {
+      display: none;
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+      font-size: 0.75rem;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 9999;
+      transition: all 0.2s;
+    }
+    #obs-exit-banner:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    /* Avatar Streamer Background Modes */
+    body.bg-transparent, body.bg-transparent #canvas {
+      background: transparent !important;
+    }
+    body.bg-green, body.bg-green #canvas {
+      background: #00ff00 !important;
+    }
+    body.bg-blue, body.bg-blue #canvas {
+      background: #0000ff !important;
+    }
+    body.bg-studio, body.bg-studio #canvas {
+      background: radial-gradient(circle at 50% 30%, #1e1e30 0%, #0b0c14 100%) !important;
+    }
+
+    /* Microphone Visualizer Bar */
+    .mic-meter-container {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .mic-meter-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #38bdf8 65%, #ec4899 100%);
+      border-radius: 6px;
+      transition: width 0.05s ease-out;
+    }
+    .badge-success {
+      background: #10b981 !important;
+      color: #fff !important;
+    }
   </style>
 </head>
 <body>
+  <!-- OBS Studio Mode Exit Pill -->
+  <div id="obs-exit-banner">🎥 Đang ở Chế Độ OBS Studio &bull; Nhấn để thoát (hoặc bấm Esc)</div>
+
   <!-- Toast Floating Notification Container -->
   <div id="toast-container"></div>
 
@@ -488,13 +821,15 @@
       </select>
     </div>
 
-    <!-- Navigation Tabs (2 Rows of 4) -->
+    <!-- Navigation Tabs (3 Rows of 3) -->
     <div class="tabs">
       <button class="tab-btn active" data-tab="tab-outfit">👗 Quần Áo</button>
       <button class="tab-btn" data-tab="tab-hair">💇 Kiểu Tóc</button>
       <button class="tab-btn" data-tab="tab-emote">🎭 Biểu Cảm</button>
       <button class="tab-btn" data-tab="tab-motion">⚡ Động Tác</button>
       <button class="tab-btn" data-tab="tab-inspect">📐 Góc & Gốc</button>
+      <button class="tab-btn" data-tab="tab-avatar-streamer" style="color: #38bdf8; font-weight: 700;">🎙️ Avatar Live</button>
+      <button class="tab-btn" data-tab="tab-tiktok" style="color: #ff0050; font-weight: 700;">🔴 TikTok Live</button>
       <button class="tab-btn" data-tab="tab-ai-prompt" style="color: #38bdf8; font-weight: 700;">📝 Form AI</button>
       <button class="tab-btn" data-tab="tab-ai-part" style="color: #4ade80; font-weight: 700;">🧩 Up Part</button>
       <button class="tab-btn" data-tab="tab-ai-model" style="color: #f472b6; font-weight: 700;">📦 Up Model</button>
@@ -802,6 +1137,200 @@
           <div class="btn-grid-2">
             <button id="btn-download-raw-texture">💾 Tải Texture Gốc</button>
             <button id="btn-download-blueprint">🗺️ Tải Bản Đồ UV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: IDOL LIVE AVATAR STREAMER -->
+    <div class="tab-content" id="tab-avatar-streamer">
+      <!-- 1. MICROPHONE VOICE LIP-SYNC -->
+      <div>
+        <div class="section-title">1. Giọng Nói Micro (Voice Lip-Sync)</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">
+            Nói vào micro để Idol tự động mấp máy miệng theo thời gian thực như một VTuber thực thụ:
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="primary" id="btn-toggle-mic" style="flex: 1; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981);">
+              🎙️ Bật Micro Lip-Sync
+            </button>
+            <span class="badge" id="mic-status-badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,0.4);">Đang Tắt</span>
+          </div>
+          <!-- Thanh đo âm lượng micro -->
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8;">
+              <span>Âm lượng giọng nói:</span>
+              <span id="val-mic-sens">1.4x</span>
+            </div>
+            <div class="mic-meter-container">
+              <div class="mic-meter-bar" id="mic-level-bar"></div>
+            </div>
+          </div>
+          <div class="slider-item" style="margin-top: 4px;">
+            <div class="slider-label">
+              <span>Độ nhạy Micro:</span>
+            </div>
+            <input type="range" id="slider-mic-sens" min="0.5" max="3.0" step="0.1" value="1.4">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. BỐ CỤC AVATAR STREAMER (LAYOUT PRESETS) -->
+      <div>
+        <div class="section-title">2. Vị Trí Avatar Trên Khung Hình</div>
+        <div class="card">
+          <div style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 4px;">
+            Chọn vị trí đặt Avatar phù hợp với màn hình Live/Game:
+          </div>
+          <div class="btn-grid-2">
+            <button class="primary" data-avatar-layout="corner-right">↘️ Góc Dưới Phải</button>
+            <button data-avatar-layout="corner-left">↙️ Góc Dưới Trái</button>
+            <button data-avatar-layout="center-bust">👤 Bán Thân Giữa</button>
+            <button data-avatar-layout="face-cam">🎯 Cận Mặt (Face)</button>
+          </div>
+          <button data-avatar-layout="full-body" style="width: 100%; margin-top: 4px; font-size: 0.76rem;">🧍 Toàn Thân Căn Giữa</button>
+        </div>
+      </div>
+
+      <!-- 3. MÀU NỀN OBS / CHROMA KEY -->
+      <div>
+        <div class="section-title">3. Màu Nền Cho OBS Studio / TikTok Studio</div>
+        <div class="card">
+          <div class="btn-grid-2">
+            <button class="primary" data-avatar-bg="transparent">🔲 Trong Suốt (Alpha)</button>
+            <button data-avatar-bg="green" style="color: #4ade80;">🟩 Màn Xanh Lá</button>
+            <button data-avatar-bg="blue" style="color: #60a5fa;">🟦 Màn Xanh Dương</button>
+            <button data-avatar-bg="studio">⬛ Nền Tối Mặc Định</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. ĐƯỜNG DẪN OBS STUDIO VÀ TEST PREVIEW -->
+      <div>
+        <div class="section-title">4. Tích Hợp Vào OBS Studio</div>
+        <div class="card">
+          <div style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4;">
+            Đường dẫn nhúng trực tiếp vào OBS Browser Source (tự động nhận tương tác TikTok Live + Micro):
+          </div>
+          <div style="background: rgba(0,0,0,0.5); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); font-family: monospace; font-size: 0.75rem; color: #38bdf8; word-break: break-all;">
+            http://localhost:5180/?obs=true
+          </div>
+          <div class="btn-grid-2" style="margin-top: 6px;">
+            <button class="primary" id="btn-copy-obs-url">📋 Sao Chép Link OBS</button>
+            <button id="btn-open-obs-preview">🚀 Mở Cửa Sổ Preview</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. BẢNG PHÍM TẮT ĐIỀU KHIỂN KHI STREAM -->
+      <div>
+        <div class="section-title">5. Phím Tắt Nhanh Cho Streamer</div>
+        <div class="card">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.74rem;">
+            <div><code>Phím 1</code>: 😊 Vui vẻ</div>
+            <div><code>Phím 2</code>: 😳 Má hồng</div>
+            <div><code>Phím 3</code>: 😉 Nháy mắt</div>
+            <div><code>Phím 4</code>: 😢 U sầu</div>
+            <div><code>Phím 5</code>: 😠 Giận dỗi</div>
+            <div><code>Phím 0 / Space</code>: 😐 Bình thường</div>
+            <div><code>Phím M</code>: 🎙️ Bật/Tắt Mic</div>
+            <div><code>Phím V</code>: 👋 Vẫy tay chào</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: TIKTOK LIVE INTERACTIVE -->
+    <div class="tab-content" id="tab-tiktok">
+      <!-- 1. KẾT NỐI PHÒNG LIVE TIKTOK -->
+      <div>
+        <div class="section-title">1. Kết Nối Phòng TikTok Live</div>
+        <div class="card">
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">
+            Nhập tên kênh TikTok đang phát trực tiếp để Idol tự động lắng nghe và tương tác theo thời gian thực (không cần tài khoản chính thức):
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="input-tiktok-username" placeholder="@tên_kênh_tiktok (vd: @username)" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;" />
+            <button class="primary" id="btn-tiktok-connect" style="white-space: nowrap; font-weight: 700; background: #ff0050;">▶️ Kết Nối Live</button>
+          </div>
+          <div class="row" style="display: flex; align-items: center; gap: 8px; margin-top: 4px; padding: 6px 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+            <span class="status-dot ready" id="tiktok-status-dot"></span>
+            <span id="tiktok-status-text" style="font-size: 0.78rem; color: #cbd5e1;">Bridge Sẵn Sàng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. BẢNG MÔ PHỎNG SỰ KIỆN LIVE (TEST SIMULATOR) -->
+      <div>
+        <div class="section-title">2. Thử Nghiệm Tương Tác (Simulator)</div>
+        <div class="card">
+          <div style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 4px;">
+            Bấm để test xem phản ứng của Idol ngay cả khi chưa mở livestream:
+          </div>
+          <div class="row" style="font-size: 0.74rem; font-weight: 600; color: #f59e0b;">🎁 Test Quà Tặng (Gift):</div>
+          <div class="btn-grid-3">
+            <button id="btn-sim-gift-rose" style="border-color: #f59e0b; font-size: 0.74rem;">🌹 Hoa Hồng (1💎)</button>
+            <button id="btn-sim-gift-crown" style="border-color: #f59e0b; font-size: 0.74rem;">👑 Vương Miện (500💎)</button>
+            <button id="btn-sim-gift-galaxy" style="border-color: #f59e0b; font-size: 0.74rem;">🪐 Galaxy (1000💎)</button>
+          </div>
+          <div class="row" style="font-size: 0.74rem; font-weight: 600; color: #38bdf8; margin-top: 4px;">💬 Test Bình Luận & Tim:</div>
+          <div class="btn-grid-2">
+            <button id="btn-sim-chat-1" style="font-size: 0.74rem;">💬 "Chào idol xinh đẹp!"</button>
+            <button id="btn-sim-chat-2" style="font-size: 0.74rem;">👗 "Áo này đẹp xỉu!"</button>
+          </div>
+          <div class="btn-grid-2">
+            <button id="btn-sim-like" style="border-color: #ec4899; color: #f472b6; font-size: 0.74rem;">❤️ Thả +50 Tim</button>
+            <button id="btn-sim-follow" style="border-color: #10b981; color: #4ade80; font-size: 0.74rem;">➕ Follow Kênh</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. CÀI ĐẶT PHẢN XẠ IDOL & ÂM THANH -->
+      <div>
+        <div class="section-title">3. Cài Đặt Phản Xạ Của Idol</div>
+        <div class="card">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="chk-tiktok-tts" checked />
+            <span>🔊 Giọng nói cảm ơn tự động (TTS Tiếng Việt)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="chk-tiktok-reaction" checked />
+            <span>⚡ Tự động đổi biểu cảm & nhảy múa mừng quà</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="chk-tiktok-bubble" checked />
+            <span>💬 Hiển thị bong bóng chat trên màn hình</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="chk-tiktok-particles" checked />
+            <span>🎉 Hiệu ứng tim bay & pháo hoa chúc mừng</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 4. CHẾ ĐỘ OBS STUDIO LÊN SÓNG -->
+      <div>
+        <div class="section-title">4. Chế Độ Lên Sóng OBS Studio</div>
+        <div class="card">
+          <div style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4;">
+            Ẩn toàn bộ menu, nền trong suốt chỉ để lại nhân vật và hiệu ứng quà tặng để đưa vào OBS qua <b>Browser Source</b>:
+          </div>
+          <button id="btn-tiktok-obs-mode" class="primary" style="background: linear-gradient(135deg, #0284c7, #2563eb); font-weight: 700; width: 100%;">
+            🎥 Bật Chế Độ OBS Studio (Trong Suốt)
+          </button>
+          <div style="font-size: 0.72rem; color: #64748b; text-align: center;">
+            (URL OBS trực tiếp: <code>http://localhost:5180/?obs=true</code>)
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. DANH SÁCH SỰ KIỆN LIVE TRỰC TIẾP -->
+      <div>
+        <div class="section-title">5. Nhật Ký Sự Kiện Trực Tiếp</div>
+        <div class="card">
+          <div class="events-feed-list" id="tiktok-events-feed">
+            <div style="color: #64748b; font-size: 0.76rem; text-align: center; padding: 12px;">Chưa có sự kiện nào. Hãy kết nối hoặc bấm nút Test ở trên!</div>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import * as PIXI from 'pixi.js'
 import { Live2DModel, ZipLoader } from 'pixi-live2d-display/cubism4'
 import JSZip from 'jszip'
+import { setupTikTokLive } from './tiktok-live'
+import { setupAvatarStreamerUI } from './avatar-streamer'
 
 // Expose PIXI to window for pixi-live2d-display
 ;(window as any).PIXI = PIXI
@@ -2028,6 +2030,65 @@ function resetTweaks() {
   })
 }
 
+// Expose Idol Control API for TikTok Live interaction & external scripts
+;(window as any).idolApi = {
+  getCurrentModel: () => currentModel,
+  setEmotion: (emote: string) => {
+    currentEmote = emote
+    document.querySelectorAll('[data-emote]').forEach(b => {
+      b.classList.toggle('primary', (b as HTMLElement).dataset.emote === emote)
+    })
+  },
+  getEmotion: () => currentEmote,
+  setTalking: (talking: boolean) => {
+    isTalking = talking
+    if (!talking && currentModel) {
+      const core = (currentModel.internalModel as any)?.coreModel
+      if (core) core.setParameterValueById('ParamMouthOpenY', 0)
+    }
+  },
+  setManualMouth: (val: number) => {
+    manualMouthOpen = Math.max(0, Math.min(1, val))
+  },
+  setLayout: (scale: number, posX: number, posY: number) => {
+    targetScale = scale
+    targetPosition = { x: posX, y: posY }
+  },
+  getLayout: () => ({ scale: targetScale, position: { ...targetPosition } }),
+  playMotion: (group?: string, index: number = 0) => {
+    if (!currentModel) return false
+    const definitions = (currentModel.internalModel as any)?.motionManager?.definitions
+    if (!definitions) return false
+    const keys = Object.keys(definitions)
+    if (keys.length === 0) return false
+    const g = group && definitions[group] ? group : keys[0]
+    currentModel.motion(g, index)
+    return true
+  },
+  triggerCheer: () => {
+    currentEmote = 'blush'
+    if (currentModel) {
+      const definitions = (currentModel.internalModel as any)?.motionManager?.definitions
+      if (definitions) {
+        const keys = Object.keys(definitions)
+        if (keys.length > 0) {
+          const randGroup = keys[Math.floor(Math.random() * keys.length)]
+          currentModel.motion(randGroup, 0)
+        }
+      }
+    }
+    setTimeout(() => {
+      if (currentEmote === 'blush') currentEmote = 'happy'
+      setTimeout(() => {
+        if (currentEmote === 'happy') currentEmote = 'neutral'
+      }, 3500)
+    }, 2500)
+  },
+  showToast,
+}
+
 // 13. Khởi chạy ứng dụng
 initUIEvents()
+setupTikTokLive()
+setupAvatarStreamerUI()
 loadModel(MODEL_PATHS.hiyori)
